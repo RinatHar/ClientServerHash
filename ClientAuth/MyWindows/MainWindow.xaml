@@ -1,0 +1,30 @@
+﻿<Window x:Class="ClientHash.MainWindow"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ClientHash"
+        mc:Ignorable="d"
+        Title="Данные" Height="600" Width="600">
+    <Grid x:Name="MainRoot" Background="LightGray">
+        <Border MinWidth="300" Margin="15" Background="White" VerticalAlignment="Center" Padding="30" MaxWidth="500" CornerRadius="20">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" Color="LightGray" ShadowDepth="0"/>
+            </Border.Effect>
+            <StackPanel>
+                <Button x:Name="logOut" HorizontalAlignment="Right" FontSize="16" Content="Выйти" Height="40" Click="OpenLogInWindow"/>
+                <Grid Margin="0 0 0 20">
+                    <TextBlock HorizontalAlignment="Center" Text="Данные" FontSize="26" FontWeight="Bold"/>
+                </Grid>
+
+                <DataGrid x:Name="MyData" IsReadOnly="True">
+                    
+                </DataGrid>
+
+                <Button x:Name="addValue" FontSize="16" Content="Добавить" Margin="0 20" Height="40" Click="OpenFormWindow"/>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

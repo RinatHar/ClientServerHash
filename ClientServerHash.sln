@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34408.163
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientHash", "ClientAuth\ClientHash.csproj", "{DCC49535-926F-4556-BBE4-93F6035C1A5A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerHash", "ServerAuth\ServerHash.csproj", "{F4369E62-CA09-4805-A088-713AB707171F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DCC49535-926F-4556-BBE4-93F6035C1A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCC49535-926F-4556-BBE4-93F6035C1A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCC49535-926F-4556-BBE4-93F6035C1A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCC49535-926F-4556-BBE4-93F6035C1A5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4369E62-CA09-4805-A088-713AB707171F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4369E62-CA09-4805-A088-713AB707171F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4369E62-CA09-4805-A088-713AB707171F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4369E62-CA09-4805-A088-713AB707171F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2DAF83B5-866F-48AE-9DC1-2AD8CB13CAE4}
+	EndGlobalSection
+EndGlobal
