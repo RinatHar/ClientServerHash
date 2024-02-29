@@ -1,4 +1,5 @@
 ﻿using ClientHash.Services;
+using System.Configuration;
 using System.Net.Http;
 using System.Windows;
 
@@ -15,14 +16,15 @@ namespace ClientHash
         {
             InitializeComponent();
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-            _service = new DataService(new HttpClient());
+            _service = new DataService(new HttpClient(), new AesEncryptionService());
         }
 
         private async void AddData(object sender, RoutedEventArgs e)
         {
+            string url = ConfigurationManager.AppSettings["UrlWriteData"];
             string value = formValue.Text;
             await _service.AddDataToServerAsync(
-                "https://localhost:7218/api/data/write",
+                url,
                 value,
                 _userService.CurrentUser.Login,
                 _userService.CurrentUser.Password);

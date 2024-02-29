@@ -1,5 +1,6 @@
 ﻿using ClientHash.Models;
 using ClientHash.Services;
+using System.Configuration;
 using System.Net.Http;
 using System.Windows;
 
@@ -13,7 +14,7 @@ namespace ClientHash
         public MainWindow(UserService userService)
         {
             InitializeComponent();
-            _service = new DataService(new HttpClient());
+            _service = new DataService(new HttpClient(), new AesEncryptionService());
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
 
             // Подписываемся на событие изменения пользователя
@@ -31,8 +32,9 @@ namespace ClientHash
 
         public async void LoadData()
         {
+            string url = ConfigurationManager.AppSettings["UrlReadData"];
             var data = await _service.GetDataFromServerAsync (
-                "https://localhost:7218/api/data/read",
+                url,
                 _userService.CurrentUser.Login, 
                 _userService.CurrentUser.Password);
             MyData.ItemsSource = data;

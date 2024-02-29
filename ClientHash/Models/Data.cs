@@ -1,8 +1,8 @@
 ﻿namespace ClientHash.Models
 {
-    internal class Data
+    public class Data
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string Value { get; set; }
     }
 }

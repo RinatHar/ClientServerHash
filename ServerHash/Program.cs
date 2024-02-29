@@ -11,6 +11,7 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddTransient<DataService>();
 builder.Services.AddTransient<AuthService>();
 builder.Services.AddTransient<AuthFilter>();
+builder.Services.AddTransient<AesEncryptionService>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(

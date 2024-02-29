@@ -1,5 +1,6 @@
 ﻿using ClientHash.Models;
 using ClientHash.Services;
+using System.Configuration;
 using System.Net.Http;
 using System.Windows;
 
@@ -13,7 +14,7 @@ namespace ClientHash
         public LoginWindow()
         {
             InitializeComponent();
-            _authService = new AuthService(new HttpClient());
+            _authService = new AuthService(new HttpClient(), new AesEncryptionService());
             _userService = new UserService();
 
         }
@@ -33,21 +34,13 @@ namespace ClientHash
 
             try
             {
-                List<string> perms = await _authService.LoginUser(login, password);
+                string url = ConfigurationManager.AppSettings["UrlLogin"];
+                List<string> perms = await _authService.LoginUser(url, login, password);
                 MessageBox.Show("Вход выполнен.");
 
                 string hashedPass = AuthService.GetSHA1Hash(password);
 
-                _userService.CurrentUser = new User
-                {
-                    Login = login,
-                    Password = hashedPass,
-                    Permissions = perms
-                };
-
-                MainWindow mainWindow = new(_userService);
-                mainWindow.Show();
-                Close();
+                OpenMainWindow(login, hashedPass, perms);
             }
             catch (Exception ex)
             {
@@ -58,7 +51,22 @@ namespace ClientHash
         private async void OpenRegisterWindow(object sender, RoutedEventArgs e)
         {
             RegisterWindow registerWindow = new();
+            registerWindow.SuccessfulRegistration += OpenMainWindow;
             registerWindow.Show();
+        }
+
+        private void OpenMainWindow(string login, string hashedPass, List<string> perms)
+        {
+            _userService.CurrentUser = new User
+            {
+                Login = login,
+                Password = hashedPass,
+                Permissions = perms
+            };
+
+            MainWindow mainWindow = new(_userService);
+            mainWindow.Show();
+            Close();
         }
     }
 }

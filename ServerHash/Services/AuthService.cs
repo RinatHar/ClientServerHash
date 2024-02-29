@@ -3,20 +3,24 @@ using ServerHash.Dto;
 using System.Data;
 using ServerHash.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace ServerHash.Services
 {
     public class AuthService
     {
         private readonly MyDbContext _context;
+        private readonly AesEncryptionService _aesService;
 
-        public AuthService(MyDbContext context)
+        public AuthService(MyDbContext context, AesEncryptionService aesService)
         {
             _context = context;
+            _aesService = aesService;
         }
 
         public async Task<List<string>> GetUserRights(string login, string password)
         {
+
             var user = await FindUserByCredentials(login, password);
             if (user != null)
             {
@@ -24,7 +28,7 @@ namespace ServerHash.Services
             }
             else
             {
-                return new List<string>();
+                return [];
             }
         }
 
@@ -56,10 +60,36 @@ namespace ServerHash.Services
             return false;
         }
 
+        public async Task<IActionResult> LoginUser(object userRights)
+        {
+            // Приводим объект к нужному типу (JsonResult)
+            if (userRights is not JsonResult userRightsJson)
+            {
+                throw new Exception("Ошибка при чтении прав.");
+            }
+
+            // Преобразуем данные в строку
+            var userRightsString = JsonConvert.SerializeObject(userRightsJson.Value);
+
+            // Шифруем права пользователя
+            var encryptedUserRights = _aesService.Encrypt(userRightsString);
+
+            // Возвращаем зашифрованные данные как ContentResult
+            return new ContentResult
+            {
+                Content = encryptedUserRights,
+                ContentType = "text/plain",
+                StatusCode = 200
+            };
+        }
+
         public async Task RegisterUser(UserDto user)
         {
+            // Шифруем данные пользователя
+            var decryptedLogin = _aesService.Decrypt(user.Login);
+            var decryptedPassword = _aesService.Decrypt(user.Password);
 
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Login == user.Login);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Login == decryptedLogin);
             if (existingUser != null)
             {
                 throw new Exception("Пользователь с таким логином уже существует.");
@@ -68,8 +98,8 @@ namespace ServerHash.Services
             // Создаем нового пользователя
             var newUser = new User
             {
-                Login = user.Login,
-                Password = user.Password
+                Login = decryptedLogin,
+                Password = decryptedPassword
             };
 
             // Добавляем пользователя в базу данных

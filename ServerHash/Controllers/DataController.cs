@@ -8,16 +8,10 @@ namespace Lab1.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DataController : ControllerBase
+    public class DataController(DataService dataService, AuthService authService) : ControllerBase
     {
-        private readonly DataService _dataService;
-        private readonly AuthService _authService;
-
-        public DataController(DataService dataService, AuthService authService)
-        {
-            _dataService = dataService;
-            _authService = authService;
-        }
+        private readonly DataService _dataService = dataService;
+        private readonly AuthService _authService = authService;
 
         [HttpGet("read")]
         [TypeFilter(typeof(AuthFilter))]
@@ -28,7 +22,7 @@ namespace Lab1.Controllers
         {
             try
             {
-                List<Data> data = await _dataService.GetAllData();
+                List<DataDto> data = await _dataService.GetAllData();
                 return new JsonResult(data);
             }
             catch (Exception ex)
@@ -50,11 +44,10 @@ namespace Lab1.Controllers
                 // Проверка прав доступа
                 if (!_authService.UserHasWriteAccess(HttpContext))
                 {
-                    return new StatusCodeResult(StatusCodes.Status403Forbidden);
+                    return new ForbidResult();
                 }
 
-                var newData = new Data { Value = data.Value };
-                await _dataService.AddData(newData);
+                await _dataService.AddData(data);
 
                 return new JsonResult("Added successfully!");
             }
@@ -64,46 +57,7 @@ namespace Lab1.Controllers
             }
         }
 
-        [HttpGet("login")]
-        [TypeFilter(typeof(AuthFilter))]
-        [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult Login()
-        {
-            // Проверяем наличие прав в Items
-            if (HttpContext.Items.TryGetValue("UserRights", out var userRights))
-            {
-                // Приводим объект к нужному типу (JsonResult)
-                var userRightsJson = userRights as JsonResult;
-
-                if (userRightsJson != null)
-                {
-                    return userRightsJson;
-                }
-            }
-
-            // Если права не найдены, возвращаем Unauthorized
-            return Unauthorized("Пользователь не найден");
-        }
-
-
-        [HttpPost("registration")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Registration(UserDto user)
-        {
-            try
-            {
-                await _authService.RegisterUser(user);
-                return new JsonResult("Registration successful!");
-            }
-
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-        }
+        
 
     }
 }
