@@ -15,58 +15,44 @@ namespace ServerHash.Services
             Key = fullKey.Take(32).ToArray();
         }
 
-        public string Encrypt(string plainText)
+        public byte[] Encrypt(byte[] dataToEncrypt)
         {
             using var aes = Aes.Create();
             aes.Key = Key;
-
-            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-            using var msEncrypt = new MemoryStream();
-            using var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
-            using (var swEncrypt = new StreamWriter(csEncrypt))
-            {
-                swEncrypt.Write(plainText);
-            }
-
+            aes.GenerateIV();
             var iv = aes.IV;
 
-            var decryptedContent = msEncrypt.ToArray();
+            using var encryptor = aes.CreateEncryptor(aes.Key, iv);
+            using var msEncrypt = new MemoryStream();
 
-            var result = new byte[iv.Length + decryptedContent.Length];
+            msEncrypt.Write(iv, 0, iv.Length);
 
-            Buffer.BlockCopy(iv, 0, result, 0, iv.Length);
-            Buffer.BlockCopy(decryptedContent, 0, result, iv.Length, decryptedContent.Length);
-
-            return Convert.ToBase64String(result);
+            using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+            {
+                csEncrypt.Write(dataToEncrypt, 0, dataToEncrypt.Length);
+            }
+            return msEncrypt.ToArray();
         }
 
-        public string Decrypt(string cipherText)
+        public byte[] Decrypt(byte[] dataToDecrypt)
         {
-            var fullCipher = Convert.FromBase64String(cipherText);
-
-            var iv = new byte[16];
-            var cipher = new byte[fullCipher.Length - 16];
-
-            Buffer.BlockCopy(fullCipher, 0, iv, 0, iv.Length);
-            Buffer.BlockCopy(fullCipher, iv.Length, cipher, 0, cipher.Length);
-
-            var plaintext = string.Empty;
-
             using var aes = Aes.Create();
             aes.Key = Key;
-            aes.IV = iv;
 
-            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            var iv = new byte[16];
+            Array.Copy(dataToDecrypt, 0, iv, 0, iv.Length);
 
-            using var msDecrypt = new MemoryStream(cipher);
+            using var decryptor = aes.CreateDecryptor(aes.Key, iv);
+            using var msDecrypt = new MemoryStream(dataToDecrypt, iv.Length, dataToDecrypt.Length - iv.Length);
             using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            using (var srDecrypt = new StreamReader(csDecrypt))
-            {
-                plaintext = srDecrypt.ReadToEnd();
-            }
 
-            return plaintext;
+            var decryptedData = new List<byte>();
+            int readByte;
+            while ((readByte = csDecrypt.ReadByte()) != -1)
+            {
+                decryptedData.Add((byte)readByte);
+            }
+            return [.. decryptedData];
         }
     }
 

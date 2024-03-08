@@ -1,20 +1,19 @@
 ﻿using ClientHash.Services;
 using System.Configuration;
-using System.Net.Http;
 using System.Windows;
 
 namespace ClientHash
 {
     public partial class RegisterWindow : Window
     {
-        public event Action<string, string, List<string>> SuccessfulRegistration;
+        public event Action<string, string, string[]> SuccessfulRegistration;
 
         private readonly AuthService _authService;
 
         public RegisterWindow()
         {
             InitializeComponent();
-            _authService = new AuthService(new HttpClient(), new AesEncryptionService());
+            _authService = new AuthService();
         }
 
         private async void Register(object sender, RoutedEventArgs e)
@@ -36,7 +35,7 @@ namespace ClientHash
                 string urlRegister = ConfigurationManager.AppSettings["UrlRegister"];
                 string urlLogin = ConfigurationManager.AppSettings["UrlLogin"];
                 await _authService.AddUser(urlRegister, login, password);
-                List<string> perms = await _authService.LoginUser(urlLogin, login, password);
+                string[] perms = await _authService.LoginUser(urlLogin, login, password);
                 SuccessfulRegistration?.Invoke(login, AuthService.GetSHA1Hash(password), perms);
                 Close();
             }

@@ -14,7 +14,7 @@ namespace ClientHash
         public MainWindow(UserService userService)
         {
             InitializeComponent();
-            _service = new DataService(new HttpClient(), new AesEncryptionService());
+            _service = new DataService();
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
 
             // Подписываемся на событие изменения пользователя

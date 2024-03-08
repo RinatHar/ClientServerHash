@@ -4,18 +4,17 @@ using System.Data;
 using ServerHash.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace ServerHash.Services
 {
     public class AuthService
     {
         private readonly MyDbContext _context;
-        private readonly AesEncryptionService _aesService;
 
-        public AuthService(MyDbContext context, AesEncryptionService aesService)
+        public AuthService(MyDbContext context)
         {
             _context = context;
-            _aesService = aesService;
         }
 
         public async Task<List<string>> GetUserRights(string login, string password)
@@ -50,11 +49,11 @@ namespace ServerHash.Services
         public bool UserHasWriteAccess(HttpContext httpContext)
         {
             // Проверяем наличие прав в Items
-            if (httpContext.Items.TryGetValue("UserRights", out var userRights) && userRights is JsonResult userRightsJson)
+            if (httpContext.Items.TryGetValue("UserRights", out var userRightsObject))
             {
-                if (userRightsJson.Value is string[] rightsArray)
+                if (userRightsObject is List<string> userRights)
                 {
-                    return rightsArray.Contains("WRITE");
+                    return userRights.Contains("WRITE");
                 }
             }
             return false;
@@ -65,41 +64,27 @@ namespace ServerHash.Services
             // Приводим объект к нужному типу (JsonResult)
             if (userRights is not JsonResult userRightsJson)
             {
-                throw new Exception("Ошибка при чтении прав.");
+                throw new Exception("Error when reading the rights.");
             }
 
-            // Преобразуем данные в строку
-            var userRightsString = JsonConvert.SerializeObject(userRightsJson.Value);
+            return userRightsJson;
 
-            // Шифруем права пользователя
-            var encryptedUserRights = _aesService.Encrypt(userRightsString);
-
-            // Возвращаем зашифрованные данные как ContentResult
-            return new ContentResult
-            {
-                Content = encryptedUserRights,
-                ContentType = "text/plain",
-                StatusCode = 200
-            };
         }
 
         public async Task RegisterUser(UserDto user)
         {
-            // Шифруем данные пользователя
-            var decryptedLogin = _aesService.Decrypt(user.Login);
-            var decryptedPassword = _aesService.Decrypt(user.Password);
 
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Login == decryptedLogin);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Login == user.Login);
             if (existingUser != null)
             {
-                throw new Exception("Пользователь с таким логином уже существует.");
+                throw new Exception("A user with this username already exists.");
             }
 
             // Создаем нового пользователя
             var newUser = new User
             {
-                Login = decryptedLogin,
-                Password = decryptedPassword
+                Login = user.Login,
+                Password = user.Password
             };
 
             // Добавляем пользователя в базу данных

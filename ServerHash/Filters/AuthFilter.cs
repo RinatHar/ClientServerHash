@@ -71,7 +71,7 @@ namespace ServerHash.Filters
 
         private void SetUserRightsInContext(AuthorizationFilterContext context, List<string> rights)
         {
-            context.HttpContext.Items["UserRights"] = new JsonResult(rights.ToArray());
+            context.HttpContext.Items["UserRights"] = rights;
         }
     }
 }

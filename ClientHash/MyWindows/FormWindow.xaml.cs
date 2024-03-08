@@ -16,7 +16,7 @@ namespace ClientHash
         {
             InitializeComponent();
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-            _service = new DataService(new HttpClient(), new AesEncryptionService());
+            _service = new DataService();
         }
 
         private async void AddData(object sender, RoutedEventArgs e)

@@ -7,12 +7,10 @@ namespace ServerHash.Services
     public class DataService
     {
         private readonly MyDbContext _context;
-        private readonly AesEncryptionService _aesService;
 
-        public DataService(MyDbContext context, AesEncryptionService aesService)
+        public DataService(MyDbContext context)
         {
             _context = context;
-            _aesService = aesService;
         }
 
         public async Task<List<DataDto>> GetAllData()
@@ -24,7 +22,7 @@ namespace ServerHash.Services
             {
                 var dataDto = new DataDto
                 {
-                    Value = _aesService.Encrypt(item.Value)
+                    Value = item.Value
                 };
                 dataDtos.Add(dataDto);
             }
@@ -36,7 +34,7 @@ namespace ServerHash.Services
         {
             var data = new Data
             {
-                Value = _aesService.Decrypt(dataDto.Value)
+                Value = dataDto.Value
             };
 
             _context.Data.Add(data);

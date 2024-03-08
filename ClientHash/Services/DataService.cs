@@ -1,4 +1,5 @@
-﻿using ClientHash.Models;
+﻿using ClientHash.Handlers;
+using ClientHash.Models;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -9,12 +10,10 @@ namespace ClientHash.Services
     public class DataService
     {
         private readonly HttpClient _client;
-        private readonly AesEncryptionService _aesService;
 
-        public DataService(HttpClient client, AesEncryptionService aesService)
+        public DataService()
         {
-            _client = client;
-            _aesService = aesService;
+            _client = new HttpClient(new EncryptionHandler());
         }
 
         public async Task<List<DataDto>> GetDataFromServerAsync(string url, string login, string password)
@@ -24,11 +23,6 @@ namespace ClientHash.Services
             var data = await response.Content.ReadAsStringAsync();
             var dataList = JsonConvert.DeserializeObject<List<DataDto>>(data);
 
-            foreach (var item in dataList)
-            {
-                item.Value = _aesService.Decrypt(item.Value);
-            }
-
             return dataList;
         }
 
@@ -36,7 +30,7 @@ namespace ClientHash.Services
         {
             var data = new DataDto
             {
-                Value = _aesService.Encrypt(value)
+                Value = value
             };
 
             var json = JsonConvert.SerializeObject(data);

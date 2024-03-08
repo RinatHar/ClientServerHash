@@ -14,7 +14,7 @@ namespace ClientHash
         public LoginWindow()
         {
             InitializeComponent();
-            _authService = new AuthService(new HttpClient(), new AesEncryptionService());
+            _authService = new AuthService();
             _userService = new UserService();
 
         }
@@ -35,7 +35,7 @@ namespace ClientHash
             try
             {
                 string url = ConfigurationManager.AppSettings["UrlLogin"];
-                List<string> perms = await _authService.LoginUser(url, login, password);
+                string[] perms = await _authService.LoginUser(url, login, password);
                 MessageBox.Show("Вход выполнен.");
 
                 string hashedPass = AuthService.GetSHA1Hash(password);
@@ -55,7 +55,7 @@ namespace ClientHash
             registerWindow.Show();
         }
 
-        private void OpenMainWindow(string login, string hashedPass, List<string> perms)
+        private void OpenMainWindow(string login, string hashedPass, string[] perms)
         {
             _userService.CurrentUser = new User
             {

@@ -4,40 +4,33 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Net.Http.Headers;
-using System.Configuration;
+using ClientHash.Handlers;
 
 namespace ClientHash.Services
 {
     internal class AuthService
     {
         private readonly HttpClient _client;
-        private readonly AesEncryptionService _aesService;
 
-        public AuthService(HttpClient client, AesEncryptionService aesService)
+        public AuthService()
         {
-            _client = client;
-            _aesService = aesService;
+            _client = new HttpClient(new EncryptionHandler());
         }
 
-        public async Task<List<string>> LoginUser(string url, string login, string password)
+        public async Task<string[]> LoginUser(string url, string login, string password)
         {
-            using HttpClient client = new();
-
             string hashedPass = GetSHA1Hash(password);
 
             string credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{login}:{hashedPass}"));
 
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-            var response = await client.SendAsync(request);
+            var response = await _client.GetAsync(url);
 
             if (response.IsSuccessStatusCode)
             {
-                string encryptedResponseBody = await response.Content.ReadAsStringAsync();
-                string decryptedResponseBody = _aesService.Decrypt(encryptedResponseBody);
-                List<string> permissions = JsonConvert.DeserializeObject<List<string>>(decryptedResponseBody);
-                return permissions;
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<string[]>(json);
             }
             else
             {
@@ -47,17 +40,12 @@ namespace ClientHash.Services
 
         public async Task AddUser(string url, string login, string password)
         {
-            using HttpClient client = new();
-
             string hashedPass = GetSHA1Hash(password);
-
-            string encryptedLogin = _aesService.Encrypt(login);
-            string encryptedPassword = _aesService.Encrypt(hashedPass);
 
             var data = new Dictionary<string, string>
             {
-                { "login", encryptedLogin },
-                { "password", encryptedPassword }
+                { "login", login },
+                { "password", hashedPass }
     };
 
             var json = JsonConvert.SerializeObject(data);

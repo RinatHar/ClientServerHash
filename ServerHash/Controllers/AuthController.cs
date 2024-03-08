@@ -19,11 +19,11 @@ namespace ServerHash.Controllers
         {
             if (HttpContext.Items.TryGetValue("UserRights", out var userRights))
             {
-                return await _authService.LoginUser(userRights);
+                return Ok(userRights);
             }
 
             // Если права не найдены, возвращаем Unauthorized
-            return Unauthorized("Пользователь не найден");
+            return Unauthorized("User not found!");
         }
 
         [HttpPost("registration")]

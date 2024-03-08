@@ -2,6 +2,7 @@ using ServerHash.Filters;
 using ServerHash.Services;
 using ServerHash.Models;
 using Microsoft.EntityFrameworkCore;
+using ServerHash.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,5 +46,7 @@ app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<EncryptionMiddleware>();
 
 app.Run();
